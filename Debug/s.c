@@ -15,6 +15,8 @@ int main()
 	}
 	else
 	{
+		printf("WILL REAP AFTER INPUT: \n");
+		char c = getchar();
 		pid_t wpid = wait(&child_status);
 		printf("REAPED THE CHILD...\n");
 	}
