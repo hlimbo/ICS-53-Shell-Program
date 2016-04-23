@@ -7,7 +7,7 @@
 #define LINES 25
 #define MAX_ARGS 500
 
-void parse_line(char line[LENGTH], char* args[]);
+int parse_line(char* buf, char* args[]);
 
 int main(int argc, char * argv[])
 {
@@ -16,14 +16,16 @@ int main(int argc, char * argv[])
         printf("prompt> ");
         char line[LENGTH];
        char* args[MAX_ARGS];
+//	args[0] = "hello";
+//	args[1] = NULL;
 		int pid = 0;
 		int child_status;
         
 		fgets(line, LENGTH, stdin);
 		printf("%d\n",strlen(line));
-	//	line[strlen(line) - 1] = 0;
 	      parse_line(line, args);
-	
+		printf("%s\n",line);
+		printf("%s\n",args[0]);
 	   if (strcmp(args[0], "\n") == 0)
 	   {
             continue;
@@ -37,10 +39,13 @@ int main(int argc, char * argv[])
 		{
 			if ((pid = fork()) == 0)
 			{
-				if(execv(args[0],args) < 0)
+				if(execvp(args[0],args) < 0)
 				{
-					printf("%s command not found",args[0]);
-					exit(0);
+					if(execv(args[0],args) < 0)
+					{	
+						printf("%s command not found",args[0]);
+						exit(0);
+					}
 				}
 				printf("FINISHED FORKING...\n");
 				printf("NOW EXITING...\n");
@@ -59,9 +64,34 @@ int main(int argc, char * argv[])
     return 0;    
  }
 	
-void parse_line(char line[LENGTH], char* args[]){
-    char * input = strtok(line, " \n");
-    int i = 0;
-    printf("%s\n",input);
-    strcpy(args[0],input);
+int  parse_line(char* buf, char* args[]){
+
+	char *delim;
+	int argc;
+	int bg;
+
+	buf[strlen(buf) - 1] = ' ';
+	while(*buf && (*buf == ' '))
+		buf++;
+	
+	argc = 0;
+	while ((delim = strchr(buf,' '))) {  
+		args[argc++] = buf;
+		*delim = '\0';
+		buf = delim + 1;
+		while(*buf && (*buf == ' '))
+			buf++;
+	}
+	
+	args[argc] = NULL;
+	if(argc == 0)
+		return 1;
+	
+	if((bg = (*args[argc-1] == '&')) != 0)
+		args[--argc] = NULL;
+	return bg;
+ // char * input = strtok(line, " \n");
+   // int i = 0;
+   // printf("%s\n",input);
+   // strcpy(args[0],input);
 }
