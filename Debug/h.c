@@ -39,7 +39,7 @@ int main(int argc, const char * argv[])
 				printf("childs pid: %d\n",pid);
 
 
-				if((pid == fork()) == 0)
+				if((pid = fork()) == 0)
 				{
 					printf("Inner fork\n");
 					printf("Now leaving grandchild\n");
