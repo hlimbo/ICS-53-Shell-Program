@@ -5,26 +5,29 @@
 
 #define LENGTH 80
 #define LINES 25
+#define MAX_ARGS 500
 
-void parse_line(char line[LENGTH], char args[LENGTH][500]);
+void parse_line(char line[LENGTH], char* args[]);
 
-int main(int argc, const char * argv[])
+int main(int argc, char * argv[])
 {
     while (1)
 	{
         printf("prompt> ");
         char line[LENGTH];
-        char args[LENGTH][500] = {0};
+       char* args[MAX_ARGS];
 		int pid = 0;
 		int child_status;
         
 		fgets(line, LENGTH, stdin);
-        parse_line(line, args);
-       
+		printf("%d\n",strlen(line));
+	//	line[strlen(line) - 1] = 0;
+	      parse_line(line, args);
+	
 	   if (strcmp(args[0], "\n") == 0)
 	   {
             continue;
-       }
+      	    }
         else if (strncmp(args[0], "quit", 4) == 0)
 		{
             //quit ish
@@ -34,34 +37,21 @@ int main(int argc, const char * argv[])
 		{
 			if ((pid = fork()) == 0)
 			{
+				if(execv(args[0],args) < 0)
+				{
+					printf("%s command not found",args[0]);
+					exit(0);
+				}
 				printf("FINISHED FORKING...\n");
 				printf("NOW EXITING...\n");
 				printf("childs pid: %d\n",pid);
-
-
-				if((pid = fork()) == 0)
-				{
-					printf("Inner fork\n");
-					printf("Now leaving grandchild\n");
-					printf("grandchilds pid: %d\n",pid);
-				}
-				else
-				{
-					pid_t wpid = wait(&child_status);
-					printf("Reaped the grandchild\n");
-					printf("child's  wpid: %d\n",wpid);
-				}
-
-				exit(0);
 			}
 			else
 			{
-				pid_t wpid = wait(&child_status);
-				printf("REAPED THE CHILD...\n");
-				printf("%d\n",getpid());
-				printf("parents pid: %d\n",wpid);
+				printf("hello from the parent\n");
+				wait(&child_status);
+				printf("CT: child has terminated\n");
 			}
-	
 		}
         
 	}
@@ -69,13 +59,9 @@ int main(int argc, const char * argv[])
     return 0;    
  }
 	
-
-void parse_line(char line[LENGTH], char args[LENGTH][500]){
-    char * input = strtok(line, " \t");
+void parse_line(char line[LENGTH], char* args[]){
+    char * input = strtok(line, " \n");
     int i = 0;
-    while (input != NULL){
-        strcpy(args[i], input);
-        ++i;
-        input = strtok(NULL, " \t");
-    }
+    printf("%s\n",input);
+    strcpy(args[0],input);
 }
