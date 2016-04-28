@@ -26,10 +26,16 @@ int main(int argc, char * argv[])
         if (strcmp(line, "\n") == 0){
             continue;
         }
-        //if false its null
-        if(!parse_line(line, cache, args))
+        int value = parse_line(line, cache, args);
+        //null
+        if( value == -1)
             continue;
-        
+        int i = 0;
+        for (i = 0; args[i] != NULL; ++i){
+        printf("%s\n", args[i]);
+        }
+        //if its 0 its background
+        //if (value == 0)
         if (strcmp(args[0], "quit") == 0)
 		{
             //quit ish
@@ -54,7 +60,7 @@ int main(int argc, char * argv[])
 			else
 			{
 				printf("hello from the parent\n");
-				wait(&child_status);
+				waitpid(pid, &child_status, WNOHANG);
 				printf("CT: child has terminated\n");
 			}
 		}
@@ -68,7 +74,8 @@ int  parse_line(char line[LENGTH], char cache[][LINES], char* args[]){
 
     char * input = strtok(line, " \n\t");
     if (input == NULL)
-        return 0;
+        //null
+        return -1;
        int i = 0;
         while (input != NULL){
                 strcpy(cache[i], input);
@@ -76,7 +83,12 @@ int  parse_line(char line[LENGTH], char cache[][LINES], char* args[]){
                 ++i;
                 input = strtok(NULL, " \n\t");
         }
+    //background
+    if (strcmp(args[i - 1], "&") == 0){
+        args[i -1] = NULL;
+        return 0;
+    }
         args[i] = NULL;
-    
+    //foreground
     return 1;
 }
