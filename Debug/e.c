@@ -1,50 +1,78 @@
-//
-//  main.c
-//  Lab_2
-//
-//  Created by Eric Franco on 4/22/16.
-//  Copyright © 2016 Eric Franco. All rights reserved.
-//
-
 #include <stdio.h>
-#include <unistd.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
 #define LENGTH 80
 #define LINES 25
-void parse_line(char line[LENGTH], char args[LENGTH][500]);
-int main(int argc, const char * argv[]) {
-    while (1){
+#define MAX_ARGS 500
+
+int parse_line(char line[LENGTH], char cache[][LINES], char* args[]);
+
+int main(int argc, char * argv[])
+{
+    while (1)
+	{
         printf("prompt> ");
         char line[LENGTH];
-        char args[LENGTH][500] = {0};
-        fgets(line, LENGTH, stdin);
-        parse_line(line, args);
-        if (strcmp(args[0], "\n") == 0){
+        char cache[LENGTH][LINES];
+       char* args[MAX_ARGS];
+//	args[0] = "hello";
+//	args[1] = NULL;
+		int pid = 0;
+		int child_status;
+        
+		fgets(line, LENGTH, stdin);
+        if (strcmp(line, "\n") == 0){
             continue;
         }
-        else if (strncmp(args[0], "quit", 4) == 0){
+        parse_line(line, cache, args);
+		printf("%s\n",line);
+		printf("%s\n",args[0]);
+        if (strncmp(args[0], "quit", 4) == 0)
+		{
             //quit ish
             return 0;
         }
-        //Just an test.
-        else if (strcmp(args[0], "print") == 0){
-            int i = 0;
-            while (strcmp(args[i], "") != 0){
-                printf("%s", args[i]);
-                ++i;
-            }
-        }
+		else//forking
+		{
+			if ((pid = fork()) == 0)
+			{
+				if(execvp(args[0],args) < 0)
+				{
+					if(execv(args[0],args) < 0)
+					{	
+						printf("%s command not found",args[0]);
+						exit(0);
+					}
+				}
+				printf("FINISHED FORKING...\n");
+				printf("NOW EXITING...\n");
+				printf("childs pid: %d\n",pid);
+			}
+			else
+			{
+				printf("hello from the parent\n");
+				wait(&child_status);
+				printf("CT: child has terminated\n");
+			}
+		}
         
-    }
-    return 0;
-}
+	}
+    
+    return 0;    
+ }
+	
+int  parse_line(char line[LENGTH], char cache[][LINES], char* args[]){
 
-void parse_line(char line[LENGTH], char args[LENGTH][500]){
     char * input = strtok(line, " \t");
-    int i = 0;
-    while (input != NULL){
-        strcpy(args[i], input);
-        ++i;
-        input = strtok(NULL, " \t");
-    }
+       int i = 0;
+        while (input != NULL){
+                strcpy(cache[i], input);
+                args[i] = cache[i];
+                ++i;
+                input = strtok(NULL, " \t");
+        }
+    
+    return 1;
 }
