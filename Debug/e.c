@@ -11,17 +11,18 @@ int parse_line(char line[LENGTH], char cache[][LINES], char* args[]);
 
 int main(int argc, char * argv[])
 {
+    int pid = 0;
+    int child_status;
     while (1)
 	{
+       waitpid(-1, &child_status, WNOHANG);
         printf("prompt> ");
         char line[LENGTH];
         char cache[LENGTH][LINES];
        char* args[MAX_ARGS];
 //	args[0] = "hello";
 //	args[1] = NULL;
-		int pid = 0;
-		int child_status;
-        
+        waitpid(pid, &child_status, WNOHANG);
 		fgets(line, LENGTH, stdin);
         if (strcmp(line, "\n") == 0){
             continue;
@@ -60,7 +61,17 @@ int main(int argc, char * argv[])
 			else
 			{
 				printf("hello from the parent\n");
-				waitpid(pid, &child_status, WNOHANG);
+				if (value != 0)
+                    wait(&child_status);
+                else if (value == 0){
+                    printf("Running in background ");
+                int return_value = waitpid(pid, &child_status, WNOHANG);
+                    if (return_value == 0)
+                        printf(" woo reaped");
+                    else
+                        printf("Error: %s", strerror(return_value));
+                    
+                }
 				printf("CT: child has terminated\n");
 			}
 		}
