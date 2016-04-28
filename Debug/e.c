@@ -26,10 +26,11 @@ int main(int argc, char * argv[])
         if (strcmp(line, "\n") == 0){
             continue;
         }
-        parse_line(line, cache, args);
-		printf("%s\n",line);
-		printf("%s\n",args[0]);
-        if (strncmp(args[0], "quit", 4) == 0)
+        //if false its null
+        if(!parse_line(line, cache, args))
+            continue;
+        
+        if (strcmp(args[0], "quit") == 0)
 		{
             //quit ish
             return 0;
@@ -65,14 +66,17 @@ int main(int argc, char * argv[])
 	
 int  parse_line(char line[LENGTH], char cache[][LINES], char* args[]){
 
-    char * input = strtok(line, " \t");
+    char * input = strtok(line, " \n\t");
+    if (input == NULL)
+        return 0;
        int i = 0;
         while (input != NULL){
                 strcpy(cache[i], input);
                 args[i] = cache[i];
                 ++i;
-                input = strtok(NULL, " \t");
+                input = strtok(NULL, " \n\t");
         }
+        args[i] = NULL;
     
     return 1;
 }
