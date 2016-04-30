@@ -19,11 +19,11 @@ int main(int argc, char * argv[])
 {
 	int pid = 0;
 	int child_status;
-    //handel
-    signal(SIGCHLD, signal_handler);
-    while (1)
+	//handel
+	signal(SIGCHLD, signal_handler);
+	while (1)
 	{
-    
+
 		printf("Dream> ");
 		char line[LENGTH];
 		char cache[LENGTH][LINES];
@@ -51,12 +51,17 @@ int main(int argc, char * argv[])
 			}
 			else
 			{
+				int wpid = 0;
 				printf("hello from the parent\n");
-                if (value == FG) {
-					pid = wait(&child_status);
-                    printf("Foreground Process Reaped:%d\n", pid);
-                    
-                }
+				if (value == FG) {
+					//pid = wait(&child_status);
+					while ((wpid = wait(&child_status)) != pid && wpid != -1)
+					{
+						printf("background process reaped: %d\n", wpid);
+					}
+					printf("Foreground Process Reaped:%d\n", pid);
+
+				}
 				else if (value == BG) {
 					printf("Running in background\n");
 				}
@@ -97,10 +102,10 @@ int  parse_line(char line[LENGTH], char cache[][LINES], char* args[])
 	return p_type;
 }
 
-void signal_handler(int signum){
-    int child_status;
-    int pid;
-    while ((pid = waitpid(-1, &child_status, WNOHANG))  > 0){
-        printf("Background Process Reaped:%d\n", pid);
-    }
+void signal_handler(int signum) {
+	int child_status;
+	int pid;
+	while ((pid = waitpid(-1, &child_status, WNOHANG))  > 0) {
+		printf("Background Process Reaped:%d\n", pid);
+	}
 }
